@@ -1,0 +1,80 @@
+# -*- coding: utf-8 -*-
+
+#importing necessary packages
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+#reading data
+steel_production_Data = pd.read_csv(r'steel_prod.csv', 
+                                    delimiter=(","))
+#cleanig data
+country_Wise_Data = steel_production_Data[~steel_production_Data["Country/Region"].isin
+                         (["World", "European Union"])]
+country_Wise_Data = country_Wise_Data.dropna()
+country_Wise_Data = country_Wise_Data.replace("-",'0')
+eu_World_Data = steel_production_Data[steel_production_Data["Country/Region"].isin
+                         (["World", "European Union"])].fillna(0)
+years = country_Wise_Data.columns.values.tolist()[2:]
+
+def plot_Line(data):
+    # Plot the data
+    plt.figure(figsize=(20, 15))
+    for i in range(len(data)):
+        
+        plt.plot(data.columns[2:], data.iloc[i, 2:].values.T.flatten(), 
+                 label=data.iloc[i, 1])
+        plt.yscale('log')
+    plt.xlabel('Year')
+    plt.ylabel('Steel Poduction (million metric tons)')
+    plt.title('Steel Productions by Country/Region')
+    plt.legend(loc='lower center', bbox_to_anchor=(0.5, -0.1), ncol=14)
+    plt.show()
+
+def plot_pie_years(data, year_List):
+    
+    for year in year_List:
+    # filter the dataframe to only include data for the selected year
+        df_year = data[['Country/Region', year]]
+    
+        #defining eu countries
+        eu_Countries = [
+         'Germany',
+         'Italy',
+         'Spain',
+         'France',
+         'Poland',
+         'Austria',
+         'Belgium',
+         'Netherlands',
+         'Sweden',
+         'Finland',
+         'Romania','Portugal']
+        
+        eu_Wise_Data = df_year[df_year["Country/Region"].isin(eu_Countries)]
+        plt.pie(pd.to_numeric(eu_Wise_Data[year], 
+                errors='coerce').fillna(0).astype(np.float64).values, 
+                labels = eu_Wise_Data["Country/Region"])
+        plt.title("European Union Steel Productiom in year " +  year)
+        plt.show()       
+    
+
+def plot_Stacked_bar(data, year_List):
+    
+    fig, ax = plt.subplots()
+    ax.bar(year_List, pd.to_numeric(data.iloc[0,2:], 
+                                    errors='coerce').astype(np.float64).values, 
+                                    label='World')
+    ax.bar(year_List, pd.to_numeric(data.iloc[1,2:], 
+                                    errors='coerce').astype(np.float64).values, 
+                                    label='European Union')
+    ax.legend()
+    ax.set_xlabel('Year')
+    ax.set_ylabel('Production (Million Tonnes)')
+    ax.set_title('Steel Production by Year')
+    plt.xticks(year_List, rotation=90)
+    plt.show()
+          
+
+plot_Stacked_bar(eu_World_Data, years)
+plot_pie_years(country_Wise_Data,years)  
+plot_Line(country_Wise_Data)      
